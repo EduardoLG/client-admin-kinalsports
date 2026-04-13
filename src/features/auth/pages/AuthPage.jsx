@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { LoginForm } from "../components/LoginForm";
+import { ForgotPasswordForm } from "../components/ForgotPasswordForm"
 
 
 const AuthPage = () => {
-
-    const [isLogin, setIsLogin] = useState(true);
     const [isForgot, setIsForgot] = useState(false);
 
     return (
@@ -25,33 +24,26 @@ const AuthPage = () => {
                 </div>
 
                 <div className="text-center mb-6">
-                    <h1 className="text-2xl lg:text-3xl font-bold
-                text-gray-900 mb-2">
-                        {isForgot
-                            ? "Recuperar contraseña"
-                            : isLogin
-                                ? "Bienvenido de Nuevo"
-                                : "Crear Cuenta"
-                        }
+                    <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                        {isForgot ? "Recuperar Contraseña" : "Bienvenido de Nuevo"}
                     </h1>
 
-                    <p className="text-gray-600 text-base max-w-md
-                    mx-auto">
+                    <p className="text-gray-600 text-base max-w-md mx-auto">
                         {isForgot
                             ? "Ingresa tu correo para recuperar tu contraseña"
-                            : isLogin
-                                ? "Ingresa a tu cuenta de administrador de kinal Sports"
-                                : "Registrate como administrador de Kinal Sports"
-
-                        }
+                            : "Ingresa a tu cuenta de administrador de Kinal Sports"}
                     </p>
 
                 </div>
-                {isForgot
-                    ? "Formulario"
-                    : <LoginForm />
-
-                }
+                {isForgot ? (
+                    <ForgotPasswordForm
+                        onSwitch={() => {
+                            setIsForgot(false);
+                        }}
+                    />
+                ) : (
+                    <LoginForm onForgot={() => setIsForgot(true)} />
+                )}
             </div>
         </div>
 
