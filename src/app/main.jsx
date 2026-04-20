@@ -5,6 +5,8 @@ import { BrowserRouter } from 'react-router-dom'
 import '../styles/index.css'
 import App from './App.jsx'
 
+console.log("Comprobando varialbles, ", import.meta.env.VITE_AUTH_URL)
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider>
