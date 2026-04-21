@@ -1,5 +1,7 @@
 import { Navbar } from "./Navbar"
 import { Sidebar } from "./Sidebar";
+import { FieldsForm } from "../../../features/fields/components/FieldsForm"
+import { ReservationsForm } from "../../../features/reservations/components/ReservationsForm"
 export const DashoardContainer = () => {
 
     return (
@@ -12,7 +14,8 @@ export const DashoardContainer = () => {
                 <Sidebar />
                 <main className="flex-1 p-6">
                     {/* Children */}
-                    hola
+                    <FieldsForm />
+                    <ReservationsForm />
                 </main>
             </div>
         </div>
