@@ -40,9 +40,10 @@ const handleRefreshToken = async function (_error) {
     const errorCode = _error.response?.data?.error;
     const requestUrl = _original.url || "";
     const isRefreshEndpoint = requestUrl.includes("/auth/refresh");
+    const isLoginEndpoint = requestUrl.includes("/Auth/login");
     const shouldAttemptRefresh =
         !isRefreshEndpoint &&
-        // La mayoría de casos es 401 (TokenExpiredError)
+        !isLoginEndpoint &&
         status === 401;
 
     // Algunos servicios pueden responder 403 con `error: TOKEN_EXPIRED`

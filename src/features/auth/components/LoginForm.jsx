@@ -17,8 +17,8 @@ export const LoginForm = ({ onForgot }) => {
     } = useForm();
 
     const onSubmit = async (data) => {
-        const res = await login(data);
-        if (res.success) {
+        const res = await login(data.emailOrUsername, data.password);
+        if (res?.success) {
             navigate("/dashboard");
             toast.success("!Bienvenido de nuevo");
         }

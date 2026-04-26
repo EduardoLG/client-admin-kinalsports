@@ -22,7 +22,7 @@ export const useAuthStore = create(
             checkAuth: () => {
                 const token = get().token;
                 const role = get().user?.role;
-                const isAdmin = role === "DAMIN_ROLE";
+                const isAdmin = role === "ADMIN";
 
                 if (token && !isAdmin) {
                     set({
@@ -32,7 +32,7 @@ export const useAuthStore = create(
                         expiresAt: null,
                         isAuthenticated: false,
                         isLoadingAuth: false,
-                        erro: "No tienes permiso para acceder como administrador"
+                        error: "No tienes permiso para acceder como administrador"
                     })
                 }
             },
@@ -47,13 +47,10 @@ export const useAuthStore = create(
                 })
             },
 
-            // ----------------------------------------------------------------
-            // En authStore.js
             login: async (emailOrUsername, password) => {
                 try {
                     set({ loading: true, error: null });
 
-                    // CAMBIO AQUÍ: Mapear a los nombres que espera tu API
                     const payload = {
                         EmailOrUsername: emailOrUsername,
                         Password: password
@@ -61,9 +58,24 @@ export const useAuthStore = create(
 
                     const { data } = await loginRequest(payload);
 
-                    // ... resto de tu lógica de validación de rol
                     const role = data?.userDetails?.role;
-                    // ... (el resto del código sigue igual)
+
+                    if (role !== "ADMIN") {
+                        set({ loading: false, error: "No tienes permiso para acceder como administrador" });
+                        toast.error("No tienes permiso para acceder como administrador");
+                        return { success: false };
+                    }
+
+                    set({
+                        user: data.userDetails,
+                        token: data.token,
+                        expiresAt: data.expiresAt,
+                        isAuthenticated: true,
+                        loading: false,
+                        error: null,
+                    });
+
+                    return { success: true };
 
                 } catch (err) {
                     const errorMessage = err.response?.data?.message || "Error al iniciar sesión";
@@ -72,8 +84,16 @@ export const useAuthStore = create(
                     return { success: false, error: errorMessage };
                 }
             },
-            // ----------------------------------------------------------------
         }),
-        { name: "auth-store" }
+        {
+            name: "auth-store",
+            partialize: (state) => ({
+                user: state.user,
+                token: state.token,
+                refreshToken: state.refreshToken,
+                expiresAt: state.expiresAt,
+                isAuthenticated: state.isAuthenticated,
+            }),
+        }
     )
 );
