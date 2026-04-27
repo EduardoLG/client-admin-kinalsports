@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom"
 import { AuthPage } from "../../features/auth/pages/AuthPage";
 import { DashboardPage } from "../layouts/DashboardPage";
 import { useAuthStore } from "../../features/auth/store/authStore";
+import { UsuarioList } from "../../features/usuarios/components/UsuarioList"
 
 const ProtectedRoute = ({ children }) => {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -15,11 +16,9 @@ export const AppRoutes = () => {
             <Route path="/" element={<AuthPage />} />
 
             {/* Protegido por rol */}
-            <Route path="/dashboard/*" element={
-                <ProtectedRoute>
-                    <DashboardPage />
-                </ProtectedRoute>
-            } />
+            <Route path="/dashboard/*" element={<DashboardPage />} >
+                <Route path="usuarios" element={<UsuarioList />} />
+            </Route>
 
         </Routes>
     );
