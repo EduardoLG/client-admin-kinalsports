@@ -9,6 +9,28 @@ const axiosAuth = axios.create({
         "Content-Type": "application/json"
     }
 });
+const axiosAdmin = axios.create({
+    baseURL: import.meta.env.VITE_AUTH_URL,
+    timeout: 80000,
+    headers: {
+        "Content-Type": "application/json"
+    }
+});
+
+axiosAdmin.interceptors.request.use((config) => {
+    // Tag del cliente para que el interceptor de refresh reintente
+    // en el mismo "backend" (auth vs admin).
+    config._axiosClient = "admin";
+    const token = useAuthStore.getState().token;
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+axiosAdmin.interceptors.response.use((res) => res, handleRefreshToken);
+
+// ====================== EXPORT AXIOS ================================
 // Configuracion de interceptores 
 axiosAuth.interceptors.request.use((config) => {
     config.axiosClient = "auth";
@@ -106,7 +128,7 @@ axiosAuth.interceptors.response.use((res) => res, handleRefreshToken);
 
 //axiosAdmin.interceptors.response.use((res) => res, handleRefreshToken);
 
+
 // ================= EXPORT AXIOS =================
-//export { axiosAuth, axiosAdmin };
+export { axiosAuth, axiosAdmin };
 export { handleRefreshToken };
-export { axiosAuth }
