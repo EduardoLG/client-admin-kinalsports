@@ -23,9 +23,7 @@ export const FieldCard = ({ field, onEdit, onDelete }) => {
                 <div className="text-sm text-gray-500 space-y-1 mb-4">
                     <p>Capacidad: <span className="text-gray-700 font-medium">{field.capacidad} personas</span></p>
                     <p>Precio: <span className="text-gray-700 font-medium">Q{field.precio}/hora</span></p>
-                    {field.descripcion && (
-                        <p className="text-gray-400 text-xs mt-1 line-clamp-2">{field.descripcion}</p>
-                    )}
+                    <p className="text-gray-400 text-xs mt-1">ID: {field.id}</p>
                 </div>
                 <div className="flex gap-2">
                     <button

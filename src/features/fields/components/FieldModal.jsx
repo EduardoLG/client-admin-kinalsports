@@ -1,23 +1,72 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useFieldsStore } from "../../usuarios/store/adminStore";
+
+import { Spinner } from "../../auth/components/Spinner";
+import { useSaveField } from "../hooks/useSaveField";
+import { showError, showSuccess } from "../../../shared/utils/toast";
 
 export const FieldModal = ({ isOpen, onClose, field, onSave }) => {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
+    const { register, handleSubmit, reset, watch, formState: { errors } } = useForm();
+    const { saveField } = useSaveField();
+    const loading = useFieldsStore((state) => state.loading);
 
+    const [preview, setPreview] = useState(null);
+
+    // 🔄 Inicializar formulario
     useEffect(() => {
-        if (field) {
-            reset(field);
-        } else {
-            reset({ nombre: "", tipo: "", capacidad: "", precio: "", descripcion: "" });
+        if (isOpen) {
+            if (field) {
+                reset({
+                    fieldName: field.fieldName,
+                    fieldType: field.fieldType,
+                    capacity: field.capacity,
+                    pricePerHour: field.pricePerHour,
+                    description: field.description,
+                });
+                setPreview(field.photo);
+            } else {
+                reset({
+                    fieldName: "",
+                    fieldType: "",
+                    capacity: "",
+                    pricePerHour: "",
+                    description: "",
+                });
+                setPreview(null);
+            }
         }
-    }, [field, reset, isOpen]);
+    }, [isOpen, field, reset]);
+
+    // 🔄 Vista previa de la foto al subirla
+    useEffect(() => {
+        const subscription = watch((value, { name }) => {
+            if (name === "photo" && value.photo && value.photo.length > 0) {
+                setPreview(URL.createObjectURL(value.photo[0]));
+            }
+        });
+        return () => subscription.unsubscribe();
+    }, [watch]);
 
     if (!isOpen) return null;
 
-    const onSubmit = (data) => {
-        onSave(data);
-        onClose();
+    // 📝 Guardar cancha (lógica del profe)
+    const onSubmit = async (data) => {
+        try {
+            await saveField(data, field?._id);
+            showSuccess(
+                field
+                    ? "Campo actualizado correctamente"
+                    : "Campo creado correctamente",
+            );
+            reset();
+            setPreview(null);
+            onClose();
+        } catch {
+            showError("Error al guardar el campo");
+        }
     };
+
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -36,31 +85,43 @@ export const FieldModal = ({ isOpen, onClose, field, onSave }) => {
                         </svg>
                     </button>
                 </div>
+
                 <form onSubmit={handleSubmit(onSubmit)} className="p-5 space-y-4">
+                    {/* Nombre */}
                     <div>
                         <label className="block text-sm text-gray-700 mb-1 font-medium">Nombre</label>
                         <input
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                             placeholder="Ej. Cancha Central"
-                            {...register("nombre", { required: "El nombre es obligatorio" })}
+                            {...register("fieldName", {
+                                required: "El nombre es obligatorio",
+                                minLength: {
+                                    value: 3,
+                                    message: "Debe contener almenos 3 caracteres"
+                                }
+                            })}
                         />
-                        {errors.nombre && <p className="text-red-500 text-xs mt-1">{errors.nombre.message}</p>}
+                        {errors.fieldName && <p className="text-red-500 text-xs mt-1">{errors.fieldName.message}</p>}
                     </div>
+
+                    {/* Tipo */}
                     <div>
                         <label className="block text-sm text-gray-700 mb-1 font-medium">Tipo de cancha</label>
                         <select
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                            {...register("tipo", { required: "Selecciona un tipo" })}
+                            {...register("fieldType", { required: "Selecciona un tipo" })}
                         >
                             <option value="">Seleccionar tipo</option>
-                            <option value="Fútbol">Fútbol</option>
+                            <option value="Fútbol">Sintetica</option>
                             <option value="Basketball">Basketball</option>
                             <option value="Volleyball">Volleyball</option>
                             <option value="Tennis">Tennis</option>
                             <option value="Otro">Otro</option>
                         </select>
-                        {errors.tipo && <p className="text-red-500 text-xs mt-1">{errors.tipo.message}</p>}
+                        {errors.fieldType && <p className="text-red-500 text-xs mt-1">{errors.fieldType.message}</p>}
                     </div>
+
+                    {/* Capacidad y precio */}
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-sm text-gray-700 mb-1 font-medium">Capacidad</label>
@@ -69,9 +130,9 @@ export const FieldModal = ({ isOpen, onClose, field, onSave }) => {
                                 min="1"
                                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder="10"
-                                {...register("capacidad", { required: "Requerido" })}
+                                {...register("capacity", { required: "Requerido" })}
                             />
-                            {errors.capacidad && <p className="text-red-500 text-xs mt-1">{errors.capacidad.message}</p>}
+                            {errors.capacity && <p className="text-red-500 text-xs mt-1">{errors.capacity.message}</p>}
                         </div>
                         <div>
                             <label className="block text-sm text-gray-700 mb-1 font-medium">Precio/hora (Q)</label>
@@ -80,24 +141,61 @@ export const FieldModal = ({ isOpen, onClose, field, onSave }) => {
                                 min="0"
                                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                                 placeholder="150"
-                                {...register("precio", { required: "Requerido" })}
+                                {...register("pricePerHour", {
+                                    required: "El precio es obligatorio",
+                                    min: { value: 1, message: "Debe ser mayor a 0" }
+                                })}
                             />
-                            {errors.precio && <p className="text-red-500 text-xs mt-1">{errors.precio.message}</p>}
+                            {errors.pricePerHour && <p className="text-red-500 text-xs mt-1">{errors.pricePerHour.message}</p>}
                         </div>
                     </div>
+
+                    {/* Descripción */}
                     <div>
                         <label className="block text-sm text-gray-700 mb-1 font-medium">Descripción</label>
                         <textarea
                             rows={3}
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
                             placeholder="Descripción de la cancha..."
-                            {...register("descripcion")}
+                            {...register("description", { required: "La descripcion es obligatoria" })}
+                        />
+                        {errors.description && (
+                            <p className="text-red-600 text-xs mt-1">
+                                {errors.description.message}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Imagen */}
+                    <div className="flex flex-col md:col-span-2">
+                        <label className="text-sm font-semibold text-gray-700 mb-1">
+                            Imagen del campo
+                        </label>
+                        <input
+                            type="file"
+                            className="w-full px-3 py-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200 transition cursor-pointer"
+                            accept="image/*"
+                            {...register("photo")}
                         />
                     </div>
+
+
+                    {/* Vista previa de foto */}
+                    {preview && (
+                        <div>
+                            <img src={preview} alt="Vista previa" className="w-full h-40 object-cover rounded-lg" />
+                        </div>
+                    )}
+
+                    {/* Botones */}
                     <div className="flex gap-3 pt-1">
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={() => {
+                                reset();
+                                setPreview(null);
+                                onClose();
+                            }}
                             className="flex-1 py-2 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
                         >
                             Cancelar
@@ -106,7 +204,13 @@ export const FieldModal = ({ isOpen, onClose, field, onSave }) => {
                             type="submit"
                             className="flex-1 py-2 text-sm bg-main-blue text-white rounded-lg hover:opacity-90 transition-opacity duration-200 font-medium"
                         >
-                            {field ? "Guardar cambios" : "Agregar cancha"}
+                            {loading ? (
+                                <Spinner small />
+                            ) : field ? (
+                                "Guardar cambios"
+                            ) : (
+                                "Crear campo"
+                            )}
                         </button>
                     </div>
                 </form>
