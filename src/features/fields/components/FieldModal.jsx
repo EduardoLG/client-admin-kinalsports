@@ -112,11 +112,9 @@ export const FieldModal = ({ isOpen, onClose, field, onSave }) => {
                             {...register("fieldType", { required: "Selecciona un tipo" })}
                         >
                             <option value="">Seleccionar tipo</option>
-                            <option value="Fútbol">Sintetica</option>
-                            <option value="Basketball">Basketball</option>
-                            <option value="Volleyball">Volleyball</option>
-                            <option value="Tennis">Tennis</option>
-                            <option value="Otro">Otro</option>
+                            <option value="SINTETICA">Sintetica</option>
+                            <option value="CONCRETO">CONCRETO</option>
+                            <option value="NATURAL">NATURAL</option>
                         </select>
                         {errors.fieldType && <p className="text-red-500 text-xs mt-1">{errors.fieldType.message}</p>}
                     </div>
@@ -125,13 +123,14 @@ export const FieldModal = ({ isOpen, onClose, field, onSave }) => {
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-sm text-gray-700 mb-1 font-medium">Capacidad</label>
-                            <input
-                                type="number"
-                                min="1"
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="10"
+                            <select className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                                 {...register("capacity", { required: "Requerido" })}
-                            />
+                            >
+                                <option value="">Seleccionar tipo</option>
+                                <option value="FUTBOL_5">FUTBOL 5</option>
+                                <option value="FUTBOL_7">FUTBOL 7</option>
+                                <option value="FUTBOL_11">FUTBOL 11</option>
+                            </select>
                             {errors.capacity && <p className="text-red-500 text-xs mt-1">{errors.capacity.message}</p>}
                         </div>
                         <div>
