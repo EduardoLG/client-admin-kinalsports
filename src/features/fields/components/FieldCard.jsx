@@ -1,4 +1,7 @@
-export const FieldCard = ({ field, onEdit, onDelete }) => {
+import { deleteField, updateField } from "../../../shared/api/admin.js";
+import { showConfirmToast } from "../../auth/components/ConfirmModal.jsx";
+
+export const FieldCard = ({ field, onEdit }) => {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
             <div className="h-40 bg-gray-100 flex items-center justify-center">
@@ -33,7 +36,14 @@ export const FieldCard = ({ field, onEdit, onDelete }) => {
                         Editar
                     </button>
                     <button
-                        onClick={() => onDelete(field)}
+                        onClick={() => showConfirmToast({
+                            title: "Eliminar campo",
+                            message: `¿Eliminar ${field.fieldName}?`,
+                            onConfirm: () => {
+                                console.log("Eliminacion ejecutada")
+                                deleteField(field.id)
+                            }
+                        })}
                         className="flex-1 py-1.5 text-sm border border-red-400 text-red-500 rounded-lg hover:bg-red-50 transition-colors duration-200 font-medium"
                     >
                         Eliminar

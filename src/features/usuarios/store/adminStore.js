@@ -49,7 +49,29 @@ export const useFieldsStore = create((set, get) => ({
             });
         }
     },
-    // ...rest of logic
+
+    updateField: async (id, formData) => {
+        try {
+            set({ loading: true, error: null });
+
+            const response = await _updateFieldRequest(id, formData);
+
+            // actualizar en el estado
+            const updated = response.data.data;
+
+            set({
+                fields: get().fields.map((f) =>
+                    f._id === id ? updated : f
+                ),
+                loading: false,
+            });
+        } catch (error) {
+            set({
+                loading: false,
+                error: error.response?.data?.message || "Error al actualizar campo",
+            });
+        }
+    },
 
     getAllReservations: async () => {
         try {
